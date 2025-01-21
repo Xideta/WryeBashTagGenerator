@@ -295,6 +295,7 @@ Begin
   slExistingTags.Clear;
   slDifferentTags.Clear;
   slBadTags.Clear;
+  slOutToFileTags.Clear;
 
   AddMessage(#10);
 End;
