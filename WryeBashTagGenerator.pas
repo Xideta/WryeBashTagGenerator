@@ -92,19 +92,19 @@ begin
   Result := wbGameMode = gmEnderalSE;
 end;
 
-procedure LogInfo(AText: String);
+procedure LogInfo(AText: string);
 begin
   AddMessage('[INFO] ' + AText);
 end;
 
 
-procedure LogWarn(AText: String);
+procedure LogWarn(AText: string);
 begin
   AddMessage('[WARN] ' + AText);
 end;
 
 
-procedure LogError(AText: String);
+procedure LogError(AText: string);
 begin
   AddMessage('[ERRO] ' + AText);
 end;
@@ -236,12 +236,12 @@ begin
 
       slExistingTags.CommaText := RegExMatchGroup('{{BASH:(.*?)}}', sDescription, 1);
 
-      StringListIntersection(slExistingTags, slDeprecatedTags, slBadTags);
+      stringListIntersection(slExistingTags, slDeprecatedTags, slBadTags);
       LogInfo(FormatTags(slBadTags, 'deprecated tag found:', 'deprecated tags found:', 'No deprecated tags found.'));
       slBadTags.Clear;
 
-      StringListDifference(slSuggestedTags, slExistingTags, slDifferentTags);
-      StringListDifference(slExistingTags, slSuggestedTags, slBadTags);
+      stringListDifference(slSuggestedTags, slExistingTags, slDifferentTags);
+      stringListDifference(slExistingTags, slSuggestedTags, slBadTags);
       slSuggestedTags.AddStrings(slDifferentTags);
 
       if (SameText(slExistingTags.CommaText, slSuggestedTags.CommaText) And not g_AddFile) then
@@ -739,7 +739,7 @@ begin
 end;
 
 
-function StrToBool(AValue: String): boolean;
+function StrToBool(AValue: string): boolean;
 begin
   if (AValue <> '0') And (AValue <> '1') then
     Result := Nil
@@ -748,7 +748,7 @@ begin
 end;
 
 
-function RegExMatchGroup(AExpr: String; ASubj: String; AGroup: integer): string;
+function RegExMatchGroup(AExpr: string; ASubj: string; AGroup: integer): string;
 
 var
   re     : TPerlRegEx;
@@ -767,7 +767,7 @@ end;
 end;
 
 
-function RegExReplace(const AExpr: String; ARepl: String; ASubj: String): string;
+function RegExReplace(const AExpr: string; ARepl: string; ASubj: string): string;
 
 var
   re      : TPerlRegEx;
@@ -902,7 +902,7 @@ begin
 end;
 
 
-function CompareFlags(AElement: IwbElement; AMaster: IwbElement; APath: String; AFlagName: String; ASuggest: boolean; ANotOperator: boolean): boolean;
+function CompareFlags(AElement: IwbElement; AMaster: IwbElement; APath: string; AFlagName: string; ASuggest: boolean; ANotOperator: boolean): boolean;
 
 var
   x         : IwbElement;
@@ -980,7 +980,7 @@ begin
 end;
 
 
-function CompareNativeValues(AElement: IwbElement; AMaster: IwbElement; APath: String): boolean;
+function CompareNativeValues(AElement: IwbElement; AMaster: IwbElement; APath: string): boolean;
 
 var
   x : IwbElement;
@@ -1004,7 +1004,7 @@ begin
 end;
 
 
-function SortedArrayElementByValue(AElement: IwbElement; APath: String; AValue: String): IwbElement;
+function SortedArrayElementByValue(AElement: IwbElement; APath: string; AValue: string): IwbElement;
 
 var
   i      : integer;
@@ -1024,7 +1024,7 @@ end;
 
 
 // TODO: natively implemented in 4.1.4
-procedure StringListDifference(ASet: TStringList; AOtherSet: TStringList; AOutput: TStringList);
+procedure stringListDifference(ASet: TStringList; AOtherSet: TStringList; AOutput: TStringList);
 
 var
   i : integer;
@@ -1036,7 +1036,7 @@ end;
 
 
 // TODO: natively implemented in 4.1.4
-procedure StringListIntersection(ASet: TStringList; AOtherSet: TStringList; AOutput: TStringList);
+procedure stringListIntersection(ASet: TStringList; AOtherSet: TStringList; AOutput: TStringList);
 
 var
   i : integer;
@@ -1048,7 +1048,7 @@ end;
 
 
 // TODO: speed this up!
-function IsEmptyKey(AEditValues: String): boolean;
+function IsEmptyKey(AEditValues: string): boolean;
 
 var
   i : integer;
@@ -1063,7 +1063,7 @@ begin
 end;
 
 
-function FormatTags(ATags: TStringList; ASingular: String; APlural: String; ANull: String): string;
+function FormatTags(ATags: TStringList; ASingular: string; APlural: string; ANull: string): string;
 begin
   if ATags.Count = 1 then
     Result := IntToStr(ATags.Count) + ' ' + ASingular + #13#10#32#32#32#32#32#32
@@ -1078,7 +1078,7 @@ begin
 end;
 
 
-function TagExists(ATag: String): boolean;
+function TagExists(ATag: string): boolean;
 begin
   Result := (slSuggestedTags.IndexOf(ATag) <> -1);
 end;
@@ -1154,7 +1154,7 @@ begin
 end;
 
 
-procedure EvaluateByPath(AElement: IwbElement; AMaster: IwbElement; APath: String);
+procedure EvaluateByPath(AElement: IwbElement; AMaster: IwbElement; APath: string);
 
 var
   x : IInterface;
@@ -1167,7 +1167,7 @@ begin
 end;
 
 
-procedure EvaluateByPathAdd(AElement: IwbElement; AMaster: IwbElement; APath: String);
+procedure EvaluateByPathAdd(AElement: IwbElement; AMaster: IwbElement; APath: string);
 
 var
   x : IInterface;
@@ -1180,7 +1180,7 @@ begin
 end;
 
 
-procedure EvaluateByPathChange(AElement: IwbElement; AMaster: IwbElement; APath: String);
+procedure EvaluateByPathChange(AElement: IwbElement; AMaster: IwbElement; APath: string);
 
 var
   x : IInterface;
@@ -1193,7 +1193,7 @@ begin
 end;
 
 
-procedure EvaluateByPathRemove(AElement: IwbElement; AMaster: IwbElement; APath: String);
+procedure EvaluateByPathRemove(AElement: IwbElement; AMaster: IwbElement; APath: string);
 
 var
   x : IInterface;
@@ -1206,7 +1206,7 @@ begin
 end;
 
 
-procedure ProcessTag(ATag: String; e: IInterface; m: IInterface);
+procedure ProcessTag(ATag: string; e: IInterface; m: IInterface);
 
 var
   x          : IInterface;
@@ -2191,7 +2191,7 @@ begin
 end;
 
 
-function AddLogEntry(ATestName: String; AElement: IwbElement; AMaster: IwbElement): string;
+function AddLogEntry(ATestName: string; AElement: IwbElement; AMaster: IwbElement): string;
 
 var
   mr    : IwbMainRecord;
@@ -2220,7 +2220,7 @@ begin
 end;
 
 
-function FileByName(AFileName: String): IwbFile;
+function FileByName(AFileName: string): IwbFile;
 
 var
   kFile : IwbFile;
@@ -2264,7 +2264,7 @@ begin
 end;
 
 
-function ShowPrompt(ACaption: String): integer;
+function ShowPrompt(ACaption: string): integer;
 
 var
   frm        : TForm;
