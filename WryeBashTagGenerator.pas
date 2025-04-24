@@ -204,6 +204,9 @@ var
   outFile      : TextFile;
 begin
 
+  if (ElementType(input) = etMainRecord) then
+    exit;
+
   f := GetFile(input);
 
   g_FileName := GetFileName(f);
