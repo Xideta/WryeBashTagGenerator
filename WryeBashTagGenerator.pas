@@ -47,13 +47,13 @@ end;
 
 function wbIsSkyrim: boolean;
 begin
-  Result := (wbGameMode = gmTES5) Or (wbGameMode = gmEnderal) Or (wbGameMode = gmSSE) Or (wbGameMode = gmTES5VR) Or (wbGameMode = gmEnderalSE);
+  Result := (wbGameMode = gmTES5) or (wbGameMode = gmEnderal) or (wbGameMode = gmSSE) or (wbGameMode = gmTES5VR) or (wbGameMode = gmEnderalSE);
 end;
 
 
 function wbIsSkyrimSE: boolean;
 begin
-  Result := (wbGameMode = gmSSE) Or (wbGameMode = gmTES5VR) Or (wbGameMode = gmEnderalSE);
+  Result := (wbGameMode = gmSSE) or (wbGameMode = gmTES5VR) or (wbGameMode = gmEnderalSE);
 end;
 
 
@@ -71,7 +71,7 @@ end;
 
 function wbIsFallout4: boolean;
 begin
-  Result := (wbGameMode = gmFO4) Or (wbGameMode = gmFO4VR);
+  Result := (wbGameMode = gmFO4) or (wbGameMode = gmFO4VR);
 end;
 
 
@@ -148,43 +148,43 @@ begin
   slOutToFileTags := TStringList.Create;
 
   if ShowPrompt(ScriptName + ' v' + ScriptVersion) = mrAbort then
-    begin
-      LogError('Cannot proceed because user aborted execution');
-      Result := 1;
-      Exit;
-    end;
+  begin
+    LogError('Cannot proceed because user aborted execution');
+    Result := 1;
+    Exit;
+  end;
 
   if wbIsFallout76 then
-    begin
-      LogError('Cannot proceed because CBash does not support Fallout 76');
-      Result := 2;
-      Exit;
-    end;
+  begin
+    LogError('Cannot proceed because CBash does not support Fallout 76');
+    Result := 2;
+    Exit;
+  end;
 
   if wbIsFallout3 then
     LogInfo('Using game mode: Fallout 3')
   else if wbIsFalloutNV then
-         LogInfo('Using game mode: Fallout: New Vegas')
+    LogInfo('Using game mode: Fallout: New Vegas')
   else if wbIsFallout4 then
-         LogInfo('Using game mode: Fallout 4')
+    LogInfo('Using game mode: Fallout 4')
   else if wbIsOblivion then
-         LogInfo('Using game mode: Oblivion')
+    LogInfo('Using game mode: Oblivion')
   else if wbIsOblivionR then
-         LogInfo('Using game mode: Oblivion Remastered')
+    LogInfo('Using game mode: Oblivion Remastered')
   else if wbIsEnderal then
-         LogInfo('Using game mode: enderal')
+    LogInfo('Using game mode: Enderal')
   else if wbIsEnderalSE then
-         LogInfo('Using game mode: enderal Special Edition')
+    LogInfo('Using game mode: Enderal Special Edition')
   else if wbIsSkyrimSE then
-         LogInfo('Using game mode: Skyrim Special Edition')
+    LogInfo('Using game mode: Skyrim Special Edition')
   else if wbIsSkyrim then
-         LogInfo('Using game mode: Skyrim')
+    LogInfo('Using game mode: Skyrim')
   else
-    begin
-      LogError('Cannot proceed because script does not support game mode');
-      Result := 3;
-      Exit;
-    end;
+  begin
+    LogError('Cannot proceed because script does not support game mode');
+    Result := 3;
+    Exit;
+  end;
 
   ScriptProcessElements := [etFile];
 end;
@@ -204,9 +204,6 @@ var
   outFile      : TextFile;
 begin
 
-  if (ElementType(input) = etMainRecord) then
-    exit;
-
   f := GetFile(input);
 
   g_FileName := GetFileName(f);
@@ -215,7 +212,7 @@ begin
 
   LogInfo('Processing... ' + IntToStr(RecordCount(f)) + ' records. Please wait. This could take a while.');
 
-  For i := 0 To Pred(RecordCount(f)) Do
+  for i := 0 to Pred(RecordCount(f)) do
     ProcessRecord(RecordByIndex(f, i));
 
   LogInfo('--------------------------------------------------------------------------------');
@@ -223,7 +220,7 @@ begin
   LogInfo('-------------------------------------------------------------------------- TESTS');
 
   if g_LogTests then
-    For i := 0 To Pred(slLog.Count) Do
+    for i := 0 to Pred(slLog.Count) do
       LogInfo(slLog[i]);
 
   LogInfo('------------------------------------------------------------------------ RESULTS');
@@ -319,8 +316,8 @@ begin
   ConflictState := ConflictAllForMainRecord(e);
 
   if (ConflictState = caUnknown)
-     Or (ConflictState = caOnlyOne)
-     Or (ConflictState = caNoConflict) then
+     or (ConflictState = caOnlyOne)
+     or (ConflictState = caNoConflict) then
     Exit;
 
   // exit if the record should not be processed
@@ -328,10 +325,10 @@ begin
     begin
       iFormID := GetLoadOrderFormID(e) And $00FFFFFF;
       if (iFormID = $00016BCF)
-         Or (iFormID = $0001EE6D)
-         Or (iFormID = $0001FA4C)
-         Or (iFormID = $00039F67)
-         Or (iFormID = $0006C3B6) then
+         or (iFormID = $0001EE6D)
+         or (iFormID = $0001FA4C)
+         or (iFormID = $00039F67)
+         or (iFormID = $0006C3B6) then
         Exit;
     end;
 
@@ -349,7 +346,7 @@ begin
 
   // stop processing deleted records to avoid errors
   if GetIsDeleted(e)
-     Or GetIsDeleted(o) then
+     or GetIsDeleted(o) then
     Exit;
 
   sSignature := Signature(e);
@@ -439,7 +436,7 @@ begin
   // -------------------------------------------------------------------------------
   // GROUP: Supported tags exclusive to FO3, FNV
   // -------------------------------------------------------------------------------
-  if wbIsFallout3 Or wbIsFalloutNV then
+  if wbIsFallout3 or wbIsFalloutNV then
     begin
       if sSignature = 'FLST' then
         ProcessTag('Deflst', e, o);
@@ -465,7 +462,7 @@ begin
   // -------------------------------------------------------------------------------
   // GROUP: Supported tags exclusive to FO3, FNV, TES4
   // -------------------------------------------------------------------------------
-  if wbIsFallout3 Or wbIsFalloutNV Or wbIsOblivion Or wbIsOblivionR then
+  if wbIsFallout3 or wbIsFalloutNV or wbIsOblivion or wbIsOblivionR then
     begin
       if ContainsStr('CREA NPC_', sSignature) then
         begin
@@ -473,7 +470,7 @@ begin
             ProcessTag('Creatures.Type', e, o);
 
           g_Tag := 'Factions';
-          if wbIsOblivion Or wbIsOblivionR Or not CompareFlags(e, o, 'ACBS\Template Flags', 'Use Factions', False, False) then
+          if wbIsOblivion or wbIsOblivionR or not CompareFlags(e, o, 'ACBS\Template Flags', 'Use Factions', False, False) then
             ProcessTag('Factions', e, o);
 
           if sSignature = 'NPC_' then
@@ -501,7 +498,7 @@ begin
   // -------------------------------------------------------------------------------
   // GROUP: Supported tags exclusive to FO3, FNV, TES5, SSE
   // -------------------------------------------------------------------------------
-  if wbIsFallout3 Or wbIsFalloutNV Or wbIsSkyrim then
+  if wbIsFallout3 or wbIsFalloutNV or wbIsSkyrim then
     begin
       if ContainsStr('CREA NPC_', sSignature) then
         begin
@@ -535,7 +532,7 @@ begin
           if not CompareFlags(e, o, 'ACBS\Template Flags', 'Use Stats', False, False) then
             ProcessTag('Actors.Stats', e, o);
 
-          if wbIsFallout3 Or wbIsFalloutNV Or (sSignature = 'NPC_') then
+          if wbIsFallout3 or wbIsFalloutNV or (sSignature = 'NPC_') then
             ProcessTag('Actors.Voice', e, o);
 
           if sSignature = 'NPC_' then
@@ -581,7 +578,7 @@ begin
   // -------------------------------------------------------------------------------
   // GROUP: Supported tags exclusive to FO3, FNV, TES4, TES5, SSE
   // -------------------------------------------------------------------------------
-  if wbIsFallout3 Or wbIsFalloutNV Or wbIsOblivion Or wbIsOblivionR Or wbIsSkyrim then
+  if wbIsFallout3 or wbIsFalloutNV or wbIsOblivion or wbIsOblivionR or wbIsSkyrim then
     begin
       if sSignature = 'CELL' then
         begin
@@ -650,10 +647,10 @@ begin
       // special handling for CREA and NPC_
       if ContainsStr('CREA NPC_', sSignature) then
         begin
-          if wbIsOblivion Or wbIsOblivionR Or wbIsFallout3 Or wbIsFalloutNV Or (sSignature = 'NPC_') then
+          if wbIsOblivion or wbIsOblivionR or wbIsFallout3 or wbIsFalloutNV or (sSignature = 'NPC_') then
             ProcessTag('Actors.RecordFlags', e, o);
 
-          if wbIsOblivion Or wbIsOblivionR then
+          if wbIsOblivion or wbIsOblivionR then
             begin
               ProcessTag('Invent.Add', e, o);
               ProcessTag('Invent.Change', e, o);
@@ -664,7 +661,7 @@ begin
                 ProcessTag('Sound', e, o);
             end;
 
-          if not wbIsOblivion Or wbIsOblivionR then
+          if not wbIsOblivion or wbIsOblivionR then
             begin
               g_Tag := 'Invent.Add';
               if not CompareFlags(e, o, 'ACBS\Template Flags', 'Use Inventory', False, False) then
@@ -712,7 +709,7 @@ begin
     begin
       g_Tag := 'Text';
 
-      if wbIsOblivion Or wbIsOblivionR And ContainsStr('BOOK BSGN CLAS LSCR MGEF SKIL', sSignature) then
+      if wbIsOblivion or wbIsOblivionR And ContainsStr('BOOK BSGN CLAS LSCR MGEF SKIL', sSignature) then
         ProcessTag(g_Tag, e, o);
 
       if wbIsFallout3 And ContainsStr('AVif BOOK CLAS LSCR MESG MGEF NOTE PERK TERM', sSignature) then
@@ -798,12 +795,12 @@ var
 begin
   Result := GetEditValue(AElement);
 
-  For i := 0 To Pred(ElementCount(AElement)) Do
+  for i := 0 to Pred(ElementCount(AElement)) do
     begin
       kElement := ElementByIndex(AElement, i);
       sName    := Name(kElement);
 
-      if SameText(sName, 'unknown') Or SameText(sName, 'unused') then
+      if SameText(sName, 'unknown') or SameText(sName, 'unused') then
         Continue;
 
       if Result <> '' then
@@ -934,7 +931,7 @@ begin
   if ANotOperator then
     Result := not SameText(sa, sb)  // only used for Behave Like Exterior, Use Sky Lighting, and Has Water
   else
-    Result := StrToBool(sa) Or StrToBool(sb);
+    Result := StrToBool(sa) or StrToBool(sb);
 
   if ASuggest And Result then
     begin
@@ -960,8 +957,8 @@ begin
   ConflictState := ConflictAllForMainRecord(ContainingMainRecord(AElement));
 
   if (ConflictState = caUnknown)
-     Or (ConflictState = caOnlyOne)
-     Or (ConflictState = caNoConflict) then
+     or (ConflictState = caOnlyOne)
+     or (ConflictState = caNoConflict) then
     Exit;
 
   sElementEditValues := EditValues(AElement);
@@ -1011,7 +1008,7 @@ var
   kEntry : IwbElement;
 begin
   Result := Nil;
-  For i := 0 To Pred(ElementCount(AElement)) Do
+  for i := 0 to Pred(ElementCount(AElement)) do
     begin
       kEntry := ElementByIndex(AElement, i);
       if SameText(GetElementEditValues(kEntry, APath), AValue) then
@@ -1029,7 +1026,7 @@ procedure stringListDifference(ASet: TStringList; AOtherSet: TStringList; AOutpu
 var
   i : integer;
 begin
-  For i := 0 To Pred(ASet.Count) Do
+  for i := 0 to Pred(ASet.Count) do
     if AOtherSet.IndexOf(ASet[i]) = -1 then
       AOutput.Add(ASet[i]);
 end;
@@ -1041,7 +1038,7 @@ procedure stringListIntersection(ASet: TStringList; AOtherSet: TStringList; AOut
 var
   i : integer;
 begin
-  For i := 0 To Pred(ASet.Count) Do
+  for i := 0 to Pred(ASet.Count) do
     if AOtherSet.IndexOf(ASet[i]) > -1 then
       AOutput.Add(ASet[i]);
 end;
@@ -1054,7 +1051,7 @@ var
   i : integer;
 begin
   Result := True;
-  For i := 1 To Length(AEditValues) Do
+  for i := 1 to Length(AEditValues) do
     if AEditValues[i] = '1' then
       begin
         Result := False;
@@ -1235,7 +1232,7 @@ begin
       a := ElementByName(x, 'Flags');
       b := ElementByName(y, 'Flags');
 
-      if wbIsOblivion Or wbIsOblivionR And CompareKeys(a, b) then
+      if wbIsOblivion or wbIsOblivionR And CompareKeys(a, b) then
         Exit;
 
       if not wbIsOblivion And not CompareFlags(x, y, 'Template Flags', 'Use Base Data', False, False) And CompareKeys(a, b) then
@@ -1250,7 +1247,7 @@ begin
       EvaluateByPath(e, m, 'DATA\Base Health');
 
       // evaluate Barter Gold if the Use AI Data flag is not set
-      if wbIsOblivion Or wbIsOblivionR Or not CompareFlags(x, y, 'Template Flags', 'Use AI Data', False, False) then
+      if wbIsOblivion or wbIsOblivionR or not CompareFlags(x, y, 'Template Flags', 'Use AI Data', False, False) then
         EvaluateByPath(x, y, 'Barter gold');
     end
 
@@ -1406,11 +1403,11 @@ begin
            if CompareFlags(e, m, 'DATA', 'Can Travel From Here', True, True) then
              Exit;
 
-           if not wbIsOblivion Or wbIsOblivionR And not wbIsFallout4 then
+           if not wbIsOblivion or wbIsOblivionR And not wbIsFallout4 then
              if CompareFlags(e, m, 'DATA', 'No LOD Water', True, True) then
                Exit;
 
-           if wbIsOblivion Or wbIsOblivionR then
+           if wbIsOblivion or wbIsOblivionR then
              if CompareFlags(e, m, 'DATA', 'Force hide land (exterior cell) / Oblivion interior (interior cell)', True, True) then
                Exit;
 
@@ -1498,7 +1495,7 @@ begin
                j := ElementByName(a, 'Flags');
                k := ElementByName(b, 'Flags');
 
-               if Assigned(j) Or Assigned(k) then
+               if Assigned(j) or Assigned(k) then
                  begin
                    // add tag if Destructable flags exist in one record
                    if CompareAssignment(j, k) then
@@ -1514,14 +1511,14 @@ begin
          // Bookmark: EffectStats
   else if (g_Tag = 'EffectStats') then
          begin
-           if wbIsOblivion Or wbIsOblivionR Or wbIsFallout3 Or wbIsFalloutNV then
+           if wbIsOblivion or wbIsOblivionR or wbIsFallout3 or wbIsFalloutNV then
              begin
                EvaluateByPath(e, m, 'DATA\Flags');
 
                if not wbIsFallout3 And not wbIsFalloutNV then
                  EvaluateByPath(e, m, 'DATA\Base cost');
 
-               if not wbIsOblivion Or wbIsOblivionR then
+               if not wbIsOblivion or wbIsOblivionR then
                  EvaluateByPath(e, m, 'DATA\Associated Item');
 
                if not wbIsFallout3 And not wbIsFalloutNV then
@@ -1536,9 +1533,9 @@ begin
                    EvaluateByPath(e, m, 'DATA\Constant Effect barter factor');
                  end;
 
-               if wbIsOblivion Or wbIsOblivionR And CompareFlags(e, m, 'DATA\Flags', 'Use actor value', False, False) then
+               if wbIsOblivion or wbIsOblivionR And CompareFlags(e, m, 'DATA\Flags', 'Use actor value', False, False) then
                  EvaluateByPath(e, m, 'DATA\Assoc. Actor Value')
-               else if wbIsFallout3 Or wbIsFalloutNV then
+               else if wbIsFallout3 or wbIsFalloutNV then
                       begin
                         EvaluateByPath(e, m, 'DATA\Archtype');
                         EvaluateByPath(e, m, 'DATA\Actor Value');
@@ -1572,7 +1569,7 @@ begin
          // Bookmark: EnchantmentStats
   else if (g_Tag = 'EnchantmentStats') then
          begin
-           if wbIsOblivion Or wbIsOblivionR Or wbIsFallout3 Or wbIsFalloutNV then
+           if wbIsOblivion or wbIsOblivionR or wbIsFallout3 or wbIsFalloutNV then
              begin
                EvaluateByPath(e, m, 'ENIT\Type');
                EvaluateByPath(e, m, 'ENIT\Charge Amount');
@@ -1629,7 +1626,7 @@ begin
                     EvaluateByPath(e, m, 'Female world model');
 
                     // ARMO - Oblivion
-                    if wbIsOblivion Or wbIsOblivionR then
+                    if wbIsOblivion or wbIsOblivionR then
                       begin
                         // evaluate Icon properties
                         EvaluateByPath(e, m, 'Icon');
@@ -1659,7 +1656,7 @@ begin
                       end
 
                       // ARMO - FO3, FNV
-                    else if wbIsFallout3 Or wbIsFalloutNV then
+                    else if wbIsFallout3 or wbIsFalloutNV then
                            begin
                              // evaluate Icon properties
                              EvaluateByPath(e, m, 'ICON');
@@ -2075,7 +2072,7 @@ begin
            if ContainsStr('ALCH AMMO APPA ARMO AVif BOOK BSGN CHAL CLAS IMOD LSCR MESG MGEF PERK SCRL SHOU SKIL SPEL TERM WEAP', sSignature) then
              EvaluateByPath(e, m, 'DESC')
 
-           else if not wbIsOblivion Or wbIsOblivionR then
+           else if not wbIsOblivion or wbIsOblivionR then
                   begin
                     if sSignature = 'BOOK' then
                       EvaluateByPath(e, m, 'CNAM')
@@ -2132,7 +2129,7 @@ begin
     begin
       g_Tag := 'Relev';
 
-      For i := 0 To Pred(ElementCount(kEntries)) Do
+      for i := 0 to Pred(ElementCount(kEntries)) do
         begin
           kEntry := ElementByIndex(kEntries, i);
           kEntryMaster := SortedArrayElementByValue(kEntriesMaster, 'LVLO\Reference', GetElementEditValues(kEntry, 'LVLO\Reference'));
@@ -2151,7 +2148,7 @@ begin
           if CompareNativeValues(kEntry, kEntryMaster, 'LVLO\Count') then
             Exit;
 
-          if wbIsOblivion Or wbIsOblivionR then
+          if wbIsOblivion or wbIsOblivionR then
             Continue;
 
           // Relev check for changed level, count, extra data
@@ -2176,9 +2173,9 @@ begin
 
       sSignature := Signature(ARecord);
 
-      if (((sSignature = 'LVLC') And (wbIsOblivion Or wbIsOblivionR Or wbIsFallout3 Or wbIsFalloutNV))
-         Or (sSignature = 'LVLI') Or ((sSignature = 'LVLN') And not wbIsOblivion Or wbIsOblivionR)
-         Or ((sSignature = 'LVSP') And (wbIsOblivion Or wbIsOblivionR Or wbIsSkyrim)))
+      if (((sSignature = 'LVLC') And (wbIsOblivion or wbIsOblivionR or wbIsFallout3 or wbIsFalloutNV))
+         or (sSignature = 'LVLI') or ((sSignature = 'LVLN') And not wbIsOblivion or wbIsOblivionR)
+         or ((sSignature = 'LVSP') And (wbIsOblivion or wbIsOblivionR or wbIsSkyrim)))
          And not TagExists(g_Tag) then
         // if number of matched entries less than in master list
         if j < ElementCount(kEntriesMaster) then
@@ -2228,7 +2225,7 @@ var
 begin
   Result := Nil;
 
-  For i := 0 To Pred(FileCount) Do
+  for i := 0 to Pred(FileCount) do
     begin
       kFile := FileByIndex(i);
       if SameText(AFileName, GetFileName(kFile)) then
