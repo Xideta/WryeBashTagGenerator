@@ -1,7 +1,8 @@
 {
   Generates bash tags for a selected plugin automatically
+  NEW SCRIPT 2025 - Oblivion Remastered Support attempt.
 
-  Games:  FO3/FNV/FO4/TES4/TES5/SSE/Enderal/EnderalSE
+  Games:  FO3/FNV/FO4/TES4/TES4R/TES5/SSE/Enderal/EnderalSE
   Author: fireundubh <fireundubh@gmail.com>
   Hotkey: F12
 }
@@ -11,9 +12,9 @@ Unit WryeBashTagGenerator;
 
 Const 
   ScriptName    = 'WryeBashTagGenerator';
-  ScriptVersion = '1.6.4.10';
-  ScriptAuthor  = 'fireundubh';
-  ScriptEmail   = 'fireundubh@gmail.com';
+  ScriptVersion = '1.6.4.11';
+  ScriptAuthor  = 'Original: fireundubh; Multifile: Xideta';
+  ScriptEmail   = 'xideta@gmail.com (Or for original parts: fireundubh@gmail.com)';
   ScaleFactor   = Screen.PixelsPerInch / 96;
 
 
@@ -32,60 +33,64 @@ Var
   g_AddFile        : boolean;
   g_LogTests       : boolean;
 
-
 Function wbIsOblivion: boolean;
 Begin
-  Result := wbGameMode = 1;
+  Result := (wbGameMode = gmTES4) or (wbGameMode = gmTES4R);
+End;
+
+
+Function wbIsOblivionR: boolean;
+Begin
+  Result := wbGameMode = gmTES4R;
 End;
 
 
 Function wbIsSkyrim: boolean;
 Begin
-  Result := (wbGameMode = 4) Or (wbGameMode = 5) Or (wbGameMode = 7) Or (wbGameMode = 8) Or (wbGameMode = 9);
+  Result := (wbGameMode = gmTES5) Or (wbGameMode = gmEnderal) Or (wbGameMode = gmSSE) Or (wbGameMode = gmTES5VR) Or (wbGameMode = gmEnderalSE);
 End;
 
 
 Function wbIsSkyrimSE: boolean;
 Begin
-  Result := (wbGameMode = 7) Or (wbGameMode = 9);
+  Result := (wbGameMode = gmSSE) Or (wbGameMode = gmTES5VR) Or (wbGameMode = gmEnderalSE);
 End;
 
 
 Function wbIsFallout3: boolean;
 Begin
-  Result := wbGameMode = 2;
+  Result := wbGameMode = gmFO3;
 End;
 
 
 Function wbIsFalloutNV: boolean;
 Begin
-  Result := wbGameMode = 3;
+  Result := wbGameMode = gmFNV;
 End;
 
 
 Function wbIsFallout4: boolean;
 Begin
-  Result := (wbGameMode = 6) Or (wbGameMode = 10);
+  Result := (wbGameMode = gmFO4) Or (wbGameMode = gmFO4VR);
 End;
 
 
 Function wbIsFallout76: boolean;
 Begin
-  Result := wbGameMode = 11;
+  Result := wbGameMode = gmFO76;
 End;
 
 
 Function wbIsEnderal: boolean;
 Begin
-  Result := wbGameMode = 5;
+  Result := wbGameMode = gmEnderal;
 End;
 
 
 Function wbIsEnderalSE: boolean;
 Begin
-  Result := wbGameMode = 9;
+  Result := wbGameMode = gmEnderalSE;
 End;
-
 
 Procedure LogInfo(AText: String);
 Begin
@@ -164,6 +169,8 @@ Begin
          LogInfo('Using game mode: Fallout 4')
   Else If wbIsOblivion Then
          LogInfo('Using game mode: Oblivion')
+  Else If wbIsOblivionR Then
+         LogInfo('Using game mode: Oblivion Remastered')
   Else If wbIsEnderal Then
          LogInfo('Using game mode: Enderal')
   Else If wbIsEnderalSE Then
@@ -206,7 +213,7 @@ Begin
 
   AddMessage(#10);
 
-  LogInfo('Processing... Please wait. This could take a while.');
+  LogInfo('Processing... ' + IntToStr(RecordCount(f)) + ' records. Please wait. This could take a while.');
 
   For i := 0 To Pred(RecordCount(f)) Do
     ProcessRecord(RecordByIndex(f, i));
@@ -347,6 +354,8 @@ Begin
 
   sSignature := Signature(e);
 
+  logInfo(Name(e));
+
   // -------------------------------------------------------------------------------
   // GROUP: Supported tags exclusive to FNV
   // -------------------------------------------------------------------------------
@@ -357,7 +366,7 @@ Begin
   // -------------------------------------------------------------------------------
   // GROUP: Supported tags exclusive to TES4
   // -------------------------------------------------------------------------------
-  If wbIsOblivion Then
+  If wbIsOblivion or wbIsOblivionR Then
     Begin
       If ContainsStr('CREA NPC_', sSignature) Then
         Begin
@@ -456,7 +465,7 @@ Begin
   // -------------------------------------------------------------------------------
   // GROUP: Supported tags exclusive to FO3, FNV, TES4
   // -------------------------------------------------------------------------------
-  If wbIsFallout3 Or wbIsFalloutNV Or wbIsOblivion Then
+  If wbIsFallout3 Or wbIsFalloutNV Or wbIsOblivion Or wbIsOblivionR Then
     Begin
       If ContainsStr('CREA NPC_', sSignature) Then
         Begin
@@ -464,7 +473,7 @@ Begin
             ProcessTag('Creatures.Type', e, o);
 
           g_Tag := 'Factions';
-          If wbIsOblivion Or Not CompareFlags(e, o, 'ACBS\Template Flags', 'Use Factions', False, False) Then
+          If wbIsOblivion Or wbIsOblivionR Or Not CompareFlags(e, o, 'ACBS\Template Flags', 'Use Factions', False, False) Then
             ProcessTag('Factions', e, o);
 
           If sSignature = 'NPC_' Then
@@ -572,7 +581,7 @@ Begin
   // -------------------------------------------------------------------------------
   // GROUP: Supported tags exclusive to FO3, FNV, TES4, TES5, SSE
   // -------------------------------------------------------------------------------
-  If wbIsFallout3 Or wbIsFalloutNV Or wbIsOblivion Or wbIsSkyrim Then
+  If wbIsFallout3 Or wbIsFalloutNV Or wbIsOblivion Or wbIsOblivionR Or wbIsSkyrim Then
     Begin
       If sSignature = 'CELL' Then
         Begin
@@ -641,10 +650,10 @@ Begin
       // special handling for CREA and NPC_
       If ContainsStr('CREA NPC_', sSignature) Then
         Begin
-          If wbIsOblivion Or wbIsFallout3 Or wbIsFalloutNV Or (sSignature = 'NPC_') Then
+          If wbIsOblivion Or wbIsOblivionR Or wbIsFallout3 Or wbIsFalloutNV Or (sSignature = 'NPC_') Then
             ProcessTag('Actors.RecordFlags', e, o);
 
-          If wbIsOblivion Then
+          If wbIsOblivion Or wbIsOblivionR Then
             Begin
               ProcessTag('Invent.Add', e, o);
               ProcessTag('Invent.Change', e, o);
@@ -655,7 +664,7 @@ Begin
                 ProcessTag('Sound', e, o);
             End;
 
-          If Not wbIsOblivion Then
+          If Not wbIsOblivion Or wbIsOblivionR Then
             Begin
               g_Tag := 'Invent.Add';
               If Not CompareFlags(e, o, 'ACBS\Template Flags', 'Use Inventory', False, False) Then
@@ -703,7 +712,7 @@ Begin
     Begin
       g_Tag := 'Text';
 
-      If wbIsOblivion And ContainsStr('BOOK BSGN CLAS LSCR MGEF SKIL', sSignature) Then
+      If wbIsOblivion Or wbIsOblivionR And ContainsStr('BOOK BSGN CLAS LSCR MGEF SKIL', sSignature) Then
         ProcessTag(g_Tag, e, o);
 
       If wbIsFallout3 And ContainsStr('AVIF BOOK CLAS LSCR MESG MGEF NOTE PERK TERM', sSignature) Then
@@ -1226,7 +1235,7 @@ Begin
       a := ElementByName(x, 'Flags');
       b := ElementByName(y, 'Flags');
 
-      If wbIsOblivion And CompareKeys(a, b) Then
+      If wbIsOblivion Or wbIsOblivionR And CompareKeys(a, b) Then
         Exit;
 
       If Not wbIsOblivion And Not CompareFlags(x, y, 'Template Flags', 'Use Base Data', False, False) And CompareKeys(a, b) Then
@@ -1241,7 +1250,7 @@ Begin
       EvaluateByPath(e, m, 'DATA\Base Health');
 
       // evaluate Barter Gold if the Use AI Data flag is not set
-      If wbIsOblivion Or Not CompareFlags(x, y, 'Template Flags', 'Use AI Data', False, False) Then
+      If wbIsOblivion Or wbIsOblivionR Or Not CompareFlags(x, y, 'Template Flags', 'Use AI Data', False, False) Then
         EvaluateByPath(x, y, 'Barter gold');
     End
 
@@ -1397,11 +1406,11 @@ Begin
            If CompareFlags(e, m, 'DATA', 'Can Travel From Here', True, True) Then
              Exit;
 
-           If Not wbIsOblivion And Not wbIsFallout4 Then
+           If Not wbIsOblivion Or wbIsOblivionR And Not wbIsFallout4 Then
              If CompareFlags(e, m, 'DATA', 'No LOD Water', True, True) Then
                Exit;
 
-           If wbIsOblivion Then
+           If wbIsOblivion Or wbIsOblivionR Then
              If CompareFlags(e, m, 'DATA', 'Force hide land (exterior cell) / Oblivion interior (interior cell)', True, True) Then
                Exit;
 
@@ -1505,14 +1514,14 @@ Begin
          // Bookmark: EffectStats
   Else If (g_Tag = 'EffectStats') Then
          Begin
-           If wbIsOblivion Or wbIsFallout3 Or wbIsFalloutNV Then
+           If wbIsOblivion Or wbIsOblivionR Or wbIsFallout3 Or wbIsFalloutNV Then
              Begin
                EvaluateByPath(e, m, 'DATA\Flags');
 
                If Not wbIsFallout3 And Not wbIsFalloutNV Then
                  EvaluateByPath(e, m, 'DATA\Base cost');
 
-               If Not wbIsOblivion Then
+               If Not wbIsOblivion Or wbIsOblivionR Then
                  EvaluateByPath(e, m, 'DATA\Associated Item');
 
                If Not wbIsFallout3 And Not wbIsFalloutNV Then
@@ -1527,7 +1536,7 @@ Begin
                    EvaluateByPath(e, m, 'DATA\Constant Effect barter factor');
                  End;
 
-               If wbIsOblivion And CompareFlags(e, m, 'DATA\Flags', 'Use actor value', False, False) Then
+               If wbIsOblivion Or wbIsOblivionR And CompareFlags(e, m, 'DATA\Flags', 'Use actor value', False, False) Then
                  EvaluateByPath(e, m, 'DATA\Assoc. Actor Value')
                Else If wbIsFallout3 Or wbIsFalloutNV Then
                       Begin
@@ -1563,7 +1572,7 @@ Begin
          // Bookmark: EnchantmentStats
   Else If (g_Tag = 'EnchantmentStats') Then
          Begin
-           If wbIsOblivion Or wbIsFallout3 Or wbIsFalloutNV Then
+           If wbIsOblivion Or wbIsOblivionR Or wbIsFallout3 Or wbIsFalloutNV Then
              Begin
                EvaluateByPath(e, m, 'ENIT\Type');
                EvaluateByPath(e, m, 'ENIT\Charge Amount');
@@ -1620,7 +1629,7 @@ Begin
                     EvaluateByPath(e, m, 'Female world model');
 
                     // ARMO - Oblivion
-                    If wbIsOblivion Then
+                    If wbIsOblivion Or wbIsOblivionR Then
                       Begin
                         // evaluate Icon properties
                         EvaluateByPath(e, m, 'Icon');
@@ -2066,7 +2075,7 @@ Begin
            If ContainsStr('ALCH AMMO APPA ARMO AVIF BOOK BSGN CHAL CLAS IMOD LSCR MESG MGEF PERK SCRL SHOU SKIL SPEL TERM WEAP', sSignature) Then
              EvaluateByPath(e, m, 'DESC')
 
-           Else If Not wbIsOblivion Then
+           Else If Not wbIsOblivion Or wbIsOblivionR Then
                   Begin
                     If sSignature = 'BOOK' Then
                       EvaluateByPath(e, m, 'CNAM')
@@ -2142,7 +2151,7 @@ Begin
           If CompareNativeValues(kEntry, kEntryMaster, 'LVLO\Count') Then
             Exit;
 
-          If wbIsOblivion Then
+          If wbIsOblivion Or wbIsOblivionR Then
             Continue;
 
           // Relev check for changed level, count, extra data
@@ -2167,9 +2176,9 @@ Begin
 
       sSignature := Signature(ARecord);
 
-      If (((sSignature = 'LVLC') And (wbIsOblivion Or wbIsFallout3 Or wbIsFalloutNV))
-         Or (sSignature = 'LVLI') Or ((sSignature = 'LVLN') And Not wbIsOblivion)
-         Or ((sSignature = 'LVSP') And (wbIsOblivion Or wbIsSkyrim)))
+      If (((sSignature = 'LVLC') And (wbIsOblivion Or wbIsOblivionR Or wbIsFallout3 Or wbIsFalloutNV))
+         Or (sSignature = 'LVLI') Or ((sSignature = 'LVLN') And Not wbIsOblivion Or wbIsOblivionR)
+         Or ((sSignature = 'LVSP') And (wbIsOblivion Or wbIsOblivionR Or wbIsSkyrim)))
          And Not TagExists(g_Tag) Then
         // if number of matched entries less than in master list
         If j < ElementCount(kEntriesMaster) Then
