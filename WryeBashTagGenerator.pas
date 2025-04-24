@@ -12,7 +12,7 @@ Unit WryeBashTagGenerator;
 
 Const 
   ScriptName    = 'WryeBashTagGenerator';
-  ScriptVersion = '1.6.4.11';
+  ScriptVersion = '1.6.4.12';
   ScriptAuthor  = 'Original: fireundubh; Multifile: Xideta';
   ScriptEmail   = 'xideta@gmail.com (Or for original parts: fireundubh@gmail.com)';
   ScaleFactor   = Screen.PixelsPerInch / 96;
