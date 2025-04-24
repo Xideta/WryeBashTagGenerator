@@ -148,43 +148,43 @@ begin
   slOutToFileTags := TStringList.Create;
 
   if ShowPrompt(ScriptName + ' v' + ScriptVersion) = mrAbort then
-  begin
-    LogError('Cannot proceed because user aborted execution');
-    Result := 1;
-    Exit;
-  end;
+    begin
+      LogError('Cannot proceed because user aborted execution');
+      Result := 1;
+      Exit;
+    end;
 
   if wbIsFallout76 then
-  begin
-    LogError('Cannot proceed because CBash does not support Fallout 76');
-    Result := 2;
-    Exit;
-  end;
+    begin
+      LogError('Cannot proceed because CBash does not support Fallout 76');
+      Result := 2;
+      Exit;
+    end;
 
   if wbIsFallout3 then
     LogInfo('Using game mode: Fallout 3')
   else if wbIsFalloutNV then
-    LogInfo('Using game mode: Fallout: New Vegas')
+         LogInfo('Using game mode: Fallout: New Vegas')
   else if wbIsFallout4 then
-    LogInfo('Using game mode: Fallout 4')
+         LogInfo('Using game mode: Fallout 4')
   else if wbIsOblivion then
-    LogInfo('Using game mode: Oblivion')
+         LogInfo('Using game mode: Oblivion')
   else if wbIsOblivionR then
-    LogInfo('Using game mode: Oblivion Remastered')
+         LogInfo('Using game mode: Oblivion Remastered')
   else if wbIsEnderal then
-    LogInfo('Using game mode: Enderal')
+         LogInfo('Using game mode: Enderal')
   else if wbIsEnderalSE then
-    LogInfo('Using game mode: Enderal Special Edition')
+         LogInfo('Using game mode: Enderal Special Edition')
   else if wbIsSkyrimSE then
-    LogInfo('Using game mode: Skyrim Special Edition')
+         LogInfo('Using game mode: Skyrim Special Edition')
   else if wbIsSkyrim then
-    LogInfo('Using game mode: Skyrim')
+         LogInfo('Using game mode: Skyrim')
   else
-  begin
-    LogError('Cannot proceed because script does not support game mode');
-    Result := 3;
-    Exit;
-  end;
+    begin
+      LogError('Cannot proceed because script does not support game mode');
+      Result := 3;
+      Exit;
+    end;
 
   ScriptProcessElements := [etFile];
 end;
@@ -241,7 +241,7 @@ begin
       stringListDifference(slExistingTags, slSuggestedTags, slBadTags);
       slSuggestedTags.AddStrings(slDifferentTags);
 
-      if (SameText(slExistingTags.CommaText, slSuggestedTags.CommaText) And not g_AddFile) then
+      if (SameText(slExistingTags.CommaText, slSuggestedTags.CommaText) and not g_AddFile) then
         begin
           LogInfo(FormatTags(slExistingTags, 'existing tag found:', 'existing tags found:', 'No existing tags found.'));
           LogInfo(FormatTags(slSuggestedTags, 'suggested tag:', 'suggested tags:', 'No suggested tags.'));
@@ -259,7 +259,7 @@ begin
           sDescription := GetEditValue(kDescription);
           sTags        := Format('{{BASH:%s}}', [slSuggestedTags.DelimitedText]);
 
-          if (Length(sDescription) = 0) And (slSuggestedTags.Count > 0) then
+          if (Length(sDescription) = 0) and (slSuggestedTags.Count > 0) then
             sDescription := sTags
           else if not SameText(slExistingTags.CommaText, slSuggestedTags.CommaText) then
                  begin
@@ -323,7 +323,7 @@ begin
   // exit if the record should not be processed
   if SameText(g_FileName, 'Dawnguard.esm') then
     begin
-      iFormID := GetLoadOrderFormID(e) And $00FFFFFF;
+      iFormID := GetLoadOrderFormID(e) and $00FFFFFF;
       if (iFormID = $00016BCF)
          or (iFormID = $0001EE6D)
          or (iFormID = $0001FA4C)
@@ -692,16 +692,16 @@ begin
   // ObjectBounds
   g_Tag := 'ObjectBounds';
 
-  if wbIsFallout3 And ContainsStr('ACTI ADDN ALCH AMMO ARMA ARMO ASPC BOOK COBJ CONT CREA DOOR EXPL FURN GRAS IDLM INGR KEYM LIGH LVLC LVLI LVLN MISC MSTT NOTE NPC_ PROJ PWAT SCOL SOUN STAT TACT TERM TREE TXST WEAP', sSignature) then
+  if wbIsFallout3 and ContainsStr('ACTI ADDN ALCH AMMO ARMA ARMO ASPC BOOK COBJ CONT CREA DOOR EXPL FURN GRAS IDLM INGR KEYM LIGH LVLC LVLI LVLN MISC MSTT NOTE NPC_ PROJ PWAT SCOL SOUN STAT TACT TERM TREE TXST WEAP', sSignature) then
     ProcessTag(g_Tag, e, o);
 
-  if wbIsFalloutNV And ContainsStr('ACTI ADDN ALCH AMMO ARMA ARMO ASPC BOOK CCRD CHIP CMNY COBJ CONT CREA DOOR EXPL FURN GRAS IDLM IMOD INGR KEYM LIGH LVLC LVLI LVLN MISC MSTT NOTE NPC_ PROJ PWAT SCOL SOUN STAT TACT TERM TREE TXST WEAP', sSignature) then
+  if wbIsFalloutNV and ContainsStr('ACTI ADDN ALCH AMMO ARMA ARMO ASPC BOOK CCRD CHIP CMNY COBJ CONT CREA DOOR EXPL FURN GRAS IDLM IMOD INGR KEYM LIGH LVLC LVLI LVLN MISC MSTT NOTE NPC_ PROJ PWAT SCOL SOUN STAT TACT TERM TREE TXST WEAP', sSignature) then
     ProcessTag(g_Tag, e, o);
 
-  if wbIsSkyrim And ContainsStr('ACTI ADDN ALCH AMMO APPA ARMO ARTO ASPC BOOK CONT DOOR DUAL ENCH EXPL FLOR FURN GRAS HAZD IDLM INGR KEYM LIGH LVLI LVLN LVSP MISC MSTT NPC_ PROJ SCRL SLGM SOUN SPEL STAT TACT TREE TXST WEAP', sSignature) then
+  if wbIsSkyrim and ContainsStr('ACTI ADDN ALCH AMMO APPA ARMO ARTO ASPC BOOK CONT DOOR DUAL ENCH EXPL FLOR FURN GRAS HAZD IDLM INGR KEYM LIGH LVLI LVLN LVSP MISC MSTT NPC_ PROJ SCRL SLGM SOUN SPEL STAT TACT TREE TXST WEAP', sSignature) then
     ProcessTag(g_Tag, e, o);
 
-  if wbIsFallout4 And ContainsStr('LVLI LVLN', sSignature) then
+  if wbIsFallout4 and ContainsStr('LVLI LVLN', sSignature) then
     ProcessTag(g_Tag, e, o);
 
   // Text
@@ -709,16 +709,16 @@ begin
     begin
       g_Tag := 'Text';
 
-      if wbIsOblivion or wbIsOblivionR And ContainsStr('BOOK BSGN CLAS LSCR MGEF SKIL', sSignature) then
+      if wbIsOblivion or wbIsOblivionR and ContainsStr('BOOK BSGN CLAS LSCR MGEF SKIL', sSignature) then
         ProcessTag(g_Tag, e, o);
 
-      if wbIsFallout3 And ContainsStr('AVif BOOK CLAS LSCR MESG MGEF NOTE PERK TERM', sSignature) then
+      if wbIsFallout3 and ContainsStr('AVif BOOK CLAS LSCR MESG MGEF NOTE PERK TERM', sSignature) then
         ProcessTag(g_Tag, e, o);
 
-      if wbIsFalloutNV And ContainsStr('AVif BOOK CHAL CLAS IMOD LSCR MESG MGEF NOTE PERK TERM', sSignature) then
+      if wbIsFalloutNV and ContainsStr('AVif BOOK CHAL CLAS IMOD LSCR MESG MGEF NOTE PERK TERM', sSignature) then
         ProcessTag(g_Tag, e, o);
 
-      if wbIsSkyrim And ContainsStr('ALCH AMMO APPA ARMO AVif BOOK CLAS LSCR MESG MGEF SCRL SHOU SPEL WEAP', sSignature) then
+      if wbIsSkyrim and ContainsStr('ALCH AMMO APPA ARMO AVif BOOK CLAS LSCR MESG MGEF SCRL SHOU SPEL WEAP', sSignature) then
         ProcessTag(g_Tag, e, o);
     end;
 end;
@@ -738,8 +738,8 @@ end;
 
 function StrToBool(AValue: string): boolean;
 begin
-  if (AValue <> '0') And (AValue <> '1') then
-    Result := Nil
+  if (AValue <> '0') and (AValue <> '1') then
+    Result := nil
   else
     Result := (AValue = '1');
 end;
@@ -752,13 +752,13 @@ var
 begin
   Result := '';
   re := TPerlRegEx.Create;
-  Try
+  try
     re.RegEx := AExpr;
     re.Options := [];
     re.Subject := ASubj;
     if re.Match then
       Result := re.Groups[AGroup];
-  Finally
+  finally
     re.Free;
 end;
 end;
@@ -772,14 +772,14 @@ var
 begin
   Result := '';
   re := TPerlRegEx.Create;
-  Try
+  try
     re.RegEx := AExpr;
     re.Options := [];
     re.Subject := ASubj;
     re.Replacement := ARepl;
     re.ReplaceAll;
     sResult := re.Subject;
-  Finally
+  finally
     re.Free;
     Result := sResult;
 end;
@@ -818,10 +818,10 @@ begin
   if TagExists(g_Tag) then
     Exit;
 
-  if not Assigned(AElement) And not Assigned(AMaster) then
+  if not Assigned(AElement) and not Assigned(AMaster) then
     Exit;
 
-  if Assigned(AElement) And Assigned(AMaster) then
+  if Assigned(AElement) and Assigned(AMaster) then
     Exit;
 
   AddLogEntry('Assigned', AElement, AMaster);
@@ -933,7 +933,7 @@ begin
   else
     Result := StrToBool(sa) or StrToBool(sb);
 
-  if ASuggest And Result then
+  if ASuggest and Result then
     begin
       sTestName := IfThen(ANotOperator, 'CompareFlags:NOT', 'CompareFlags:OR');
       AddLogEntry(sTestName, x, y);
@@ -964,7 +964,7 @@ begin
   sElementEditValues := EditValues(AElement);
   sMasterEditValues  := EditValues(AMaster);
 
-  if IsEmptyKey(sElementEditValues) And IsEmptyKey(sMasterEditValues) then
+  if IsEmptyKey(sElementEditValues) and IsEmptyKey(sMasterEditValues) then
     Exit;
 
   if SameText(sElementEditValues, sMasterEditValues) then
@@ -1007,7 +1007,7 @@ var
   i      : integer;
   kEntry : IwbElement;
 begin
-  Result := Nil;
+  Result := nil;
   for i := 0 to Pred(ElementCount(AElement)) do
     begin
       kEntry := ElementByIndex(AElement, i);
@@ -1232,10 +1232,10 @@ begin
       a := ElementByName(x, 'Flags');
       b := ElementByName(y, 'Flags');
 
-      if wbIsOblivion or wbIsOblivionR And CompareKeys(a, b) then
+      if wbIsOblivion or wbIsOblivionR and CompareKeys(a, b) then
         Exit;
 
-      if not wbIsOblivion And not CompareFlags(x, y, 'Template Flags', 'Use Base Data', False, False) And CompareKeys(a, b) then
+      if not wbIsOblivion and not CompareFlags(x, y, 'Template Flags', 'Use Base Data', False, False) and CompareKeys(a, b) then
         Exit;
 
       // evaluate properties
@@ -1403,7 +1403,7 @@ begin
            if CompareFlags(e, m, 'DATA', 'Can Travel From Here', True, True) then
              Exit;
 
-           if not wbIsOblivion or wbIsOblivionR And not wbIsFallout4 then
+           if not wbIsOblivion or wbIsOblivionR and not wbIsFallout4 then
              if CompareFlags(e, m, 'DATA', 'No LOD Water', True, True) then
                Exit;
 
@@ -1437,7 +1437,7 @@ begin
 
          // Bookmark: C.SkyLighting
          // add tag if the Behave Like Exterior flag is set in one record but not the other
-  else if (g_Tag = 'C.SkyLighting') And CompareFlags(e, m, 'DATA', 'Use Sky Lighting', True, True) then
+  else if (g_Tag = 'C.SkyLighting') and CompareFlags(e, m, 'DATA', 'Use Sky Lighting', True, True) then
          Exit
 
          // Bookmark: C.Water
@@ -1515,25 +1515,25 @@ begin
              begin
                EvaluateByPath(e, m, 'DATA\Flags');
 
-               if not wbIsFallout3 And not wbIsFalloutNV then
+               if not wbIsFallout3 and not wbIsFalloutNV then
                  EvaluateByPath(e, m, 'DATA\Base cost');
 
                if not wbIsOblivion or wbIsOblivionR then
                  EvaluateByPath(e, m, 'DATA\Associated Item');
 
-               if not wbIsFallout3 And not wbIsFalloutNV then
+               if not wbIsFallout3 and not wbIsFalloutNV then
                  EvaluateByPath(e, m, 'DATA\Magic School');
 
                EvaluateByPath(e, m, 'DATA\Resist Value');
                EvaluateByPath(e, m, 'DATA\Projectile Speed');
 
-               if not wbIsFallout3 And not wbIsFalloutNV then
+               if not wbIsFallout3 and not wbIsFalloutNV then
                  begin
                    EvaluateByPath(e, m, 'DATA\Constant Effect enchantment factor');
                    EvaluateByPath(e, m, 'DATA\Constant Effect barter factor');
                  end;
 
-               if wbIsOblivion or wbIsOblivionR And CompareFlags(e, m, 'DATA\Flags', 'Use actor value', False, False) then
+               if wbIsOblivion or wbIsOblivionR and CompareFlags(e, m, 'DATA\Flags', 'Use actor value', False, False) then
                  EvaluateByPath(e, m, 'DATA\Assoc. Actor Value')
                else if wbIsFallout3 or wbIsFalloutNV then
                       begin
@@ -1754,7 +1754,7 @@ begin
                   end
 
                   // evaluate MGEF properties
-           else if wbIsSkyrim And (sSignature = 'MGEF') then
+           else if wbIsSkyrim and (sSignature = 'MGEF') then
                   begin
                     EvaluateByPath(e, m, 'Magic Effect Data\DATA\Casting Light');
                     EvaluateByPath(e, m, 'Magic Effect Data\DATA\Hit Shader');
@@ -2000,7 +2000,7 @@ begin
                else if sSignature = 'CONT' then
                       begin
                         EvaluateByPath(e, m, 'QNAM');
-                        if not wbIsSkyrim And not wbIsFallout3 then
+                        if not wbIsSkyrim and not wbIsFallout3 then
                           EvaluateByPath(e, m, 'RNAM');
                         // FO3, TESV, and SSE don't have this element
                       end
@@ -2107,9 +2107,10 @@ var
   sMasterEditValues : string;
   i                 : integer;
   j                 : integer;
+
 begin
   // nothing to do if already tagged
-  if TagExists('Delev') And TagExists('Relev') then
+  if TagExists('Delev') and TagExists('Relev') then
     Exit;
 
   // get Leveled List Entries
@@ -2173,10 +2174,10 @@ begin
 
       sSignature := Signature(ARecord);
 
-      if (((sSignature = 'LVLC') And (wbIsOblivion or wbIsOblivionR or wbIsFallout3 or wbIsFalloutNV))
-         or (sSignature = 'LVLI') or ((sSignature = 'LVLN') And not wbIsOblivion or wbIsOblivionR)
-         or ((sSignature = 'LVSP') And (wbIsOblivion or wbIsOblivionR or wbIsSkyrim)))
-         And not TagExists(g_Tag) then
+      if (((sSignature = 'LVLC') and (wbIsOblivion or wbIsOblivionR or wbIsFallout3 or wbIsFalloutNV))
+         or (sSignature = 'LVLI') or ((sSignature = 'LVLN') and not wbIsOblivion or wbIsOblivionR)
+         or ((sSignature = 'LVSP') and (wbIsOblivion or wbIsOblivionR or wbIsSkyrim)))
+         and not TagExists(g_Tag) then
         // if number of matched entries less than in master list
         if j < ElementCount(kEntriesMaster) then
           begin
@@ -2223,7 +2224,7 @@ var
   kFile : IwbFile;
   i     : integer;
 begin
-  Result := Nil;
+  Result := nil;
 
   for i := 0 to Pred(FileCount) do
     begin
@@ -2237,7 +2238,7 @@ begin
 end;
 
 
-procedure EscKeyHandler(Sender: TObject; varKey: Word; Shift: TShiftState);
+procedure EscKeyHandler(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if Key = 27 then
     Sender.Close;
@@ -2345,7 +2346,7 @@ begin
     Result := frm.ShowModal;
   finally
     frm.Free;
-  end;
+end;
 end;
 
 end.
