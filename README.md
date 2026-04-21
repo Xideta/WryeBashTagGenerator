@@ -1,75 +1,153 @@
-# Wrye Bash Tag Generator
+# WryeBashTagGenerator-NG
 
-xEdit script for generating tags for Wrye Bash
+xEdit Pascal script that generates [Wrye Bash](https://github.com/wrye-bash/wrye-bash) bash tags for a selected plugin by diffing the plugin's records against their masters and emitting the tag names that match Wrye Bash's patcher rules. Fork of fireundubh's `WryeBashTagGenerator` (multifile variant by Xideta).
 
-## Unsupported tags
+> **No support.** This script is provided as an example. There is no warranty, no support, no bug-tracker SLA, no upgrade promises. Use at your own risk; review suggested tags before writing them to your plugin's header. The upstream authors of `WryeBashTagGenerator` (fireundubh, Xideta) did not write this fork and should not be contacted about it; see Credits below for proper citation.
 
-All tags are supported except those that require the user's explicit intent.
+## Supported games
 
-*(See: [Wrye Bash Advanced Readme](https://wrye-bash.github.io/docs/Wrye%20Bash%20Advanced%20Readme.html))*
+Fallout 3, Fallout: New Vegas, Fallout 4 (incl. VR), Oblivion, Oblivion Remastered, Skyrim (LE / SE / VR), Enderal, Enderal Special Edition.
 
-### Special Function Tags
+Fallout 76 is explicitly **unsupported** (CBash limitation).
 
-- `Deactivate`
-- `Filter`
-- `IIM`
-- `MustBeActiveIfImported`
-- `NoMerge`
+## Requirements
 
-### Other Tags
+- **xEdit 4.1.4 or newer.** The script aborts with an error on older builds. Native StringList set operations and the assumed API surface require this baseline.
 
-- `Actors.AIPackagesForceAdd`
-- `Actors.SpellsForceAdd`
-- `NpcFacesForceFullImport`
-- `R.AddSpells`
+## Install
 
+Copy `WryeBashTagGenerator-NG.pas` into your xEdit `Edit Scripts` folder.
 
-## New tags
+## Run
 
-The following tags were added or changed in v1.6.4.0.
+1. Launch xEdit (`SSEEdit.exe`, `FO4Edit.exe`, etc.) and load your plugin set.
+2. Right-click the plugin you want to tag → **Apply Script**.
+3. Pick `WryeBashTagGenerator-NG` and confirm.
+4. Hotkey: **F12** runs the script after the first manual selection.
 
-### Added tags
+The script operates on **one plugin per invocation**. If you launch it against a selection that spans multiple plugins, the run is aborted in `Finalize` with an explicit error listing every targeted file; re-run with only one plugin selected.
 
-New Tag | Supported Games
-:--- | :---
-`Actors.Perks.Add` | TES5, SSE
-`Actors.Perks.Change` | TES5, SSE
-`Actors.Perks.Remove` | TES5, SSE
-`Actors.Voice` | FO3, FNV, TES5, SSE
-`C.ForceHideLand` | FO3, FNV, TES5, SSE
-`C.MiscFlags` | FO3, FNV, TES4, TES5, SSE
-`Creatures.Type` | FO3, FNV, TES4
-`Deflst` | FO3, FNV
-`EffectStats` | FO3, FNV, TES4, TES5, SSE
-`EnchantmentStats` | FO3, FNV, TES4, TES5, SSE
-`Factions` | FO3, FNV, TES4, TES5, SSE
-`NPC.AIPackageOverrides` | TES5, SSE
-`NPC.AttackRace` | TES5, SSE
-`NPC.CrimeFaction` | TES5, SSE
-`NPC.DefaultOutfit` | TES5, SSE
-`NPC.Eyes` | FO3, FNV, TES4
-`NPC.FaceGen` | FO3, FNV, TES4
-`NPC.Hair` | FO3, FNV, TES4
-`Outfits.Add` | TES5, SSE
-`Outfits.Remove` | TES5, SSE
+## Options dialog
 
+Four checkboxes:
 
-### Replaced tags
+| Checkbox | Default | Effect |
+|----------|---------|--------|
+| Write suggested tags to header | off | Rewrites the plugin description's `{{BASH:...}}` block with the merged final tag set. |
+| Write suggested tags to file | off | Also writes canonical tag names to `Data\BashTags\<plugin>.txt`. |
+| Log test results to Messages tab | on | Per-detection technical log lines (`{Tag} (TestName) [SIG:FormID] path`). |
+| Show Tag to Record Relationships | on | Plain-language `[INFO] Tag suggestion <tag> based on <reason> at [SIG:FormID] <path>` lines after the results summary. One line per detection. |
+| Suggest heuristic Force* tags | off | See "Heuristic Force* tags" below. |
 
-Old Tag | Split Into | Supported Games
-:--- | :--- | :---
-`Invent` | `Invent.Add`<br>`Invent.Change`<br>`Invent.Remove` | FO3, FNV, TES4, TES5, SSE
-`R.Relations` | `R.Relations.Add`<br>`R.Relations.Change`<br>`R.Relations.Remove` | FO3, FNV, TES4
-`Relations` | `Relations.Add`<br>`Relations.Change`<br>`Relations.Remove` | FO3, FNV, TES4, TES5, SSE
+## Output
 
+- `{{BASH:...}}` block in the plugin description is normalized via Wrye Bash's `_tag_aliases` map and written back to `SNAM` if the header option is on.
+- If the existing description already contains deprecated tag names (e.g. `Factions`, `NpcFaces`, `Voice-F`), the script prompts before rewriting; declining keeps the original description untouched.
+- `BashTags\<plugin>.txt` (when enabled) always contains canonical tag names only.
 
-### Renamed tags
+## BashTags file handling (`Data\BashTags\<plugin>.txt`)
 
-Old Tag | New Tag | Supported Games
-:--- | :--- | :---
-`Body-F` | `R.Body-F` | FO3, FNV, TES4
-`Body-M` | `R.Body-M` | FO3, FNV, TES4
-`Body-Size-F` | `R.Body-Size-F` | FO3, FNV, TES4
-`Body-Size-M` | `R.Body-Size-M` | FO3, FNV, TES4
-`Eyes` | `R.Eyes` | FO3, FNV, TES4
-`Hair` | `R.Hair` | FO3, FNV, TES4
+If a `Data\BashTags\<plugin>.txt` exists, the script reads it (Wrye-Bash format: `#` comments, comma-separated tags, `-Tag` for explicit removals) and reports its contents alongside the header:
+
+- `existing tags found in header:` — tags inside the `{{BASH:...}}` block of the plugin description.
+- `existing tags found in BashTags file:` — additive tags from the BashTags file.
+- `tags explicitly removed (-) in BashTags file:` — entries the user prefixed with `-`, shown only when present.
+
+This script does **not** reconcile the two sources — that's Wrye Bash's job. When **Write suggested tags to file** is on, before overwriting an existing `BashTags\<plugin>.txt`:
+
+1. If the header `{{BASH:...}}` block and the BashTags file disagree, you get a single-button **Abort** warning. Both writes (header and file) are skipped for this run; fix the discrepancy manually and re-run. There is no "continue anyway" option — reconciliation is intentionally outside this script's scope.
+2. Otherwise, you get a "back up + overwrite" confirmation (Yes/No). Choosing **No** discards the file write; the existing BashTags file is left untouched. The header rewrite is independently gated by **Write suggested tags to header** and is unaffected by your choice here.
+
+Approved writes use the Wrye Bash file format and embed the previous file contents in-place as commented lines, e.g.:
+
+```
+# Generated by WryeBashTagGenerator-NG v1.9.1.0
+# --- Backup of previous file contents (2026-04-19 14:23:01) ---
+# OldTagA, OldTagB, -OldTagC
+# --- End backup ---
+NewTagA, NewTagB, NewTagC
+```
+
+If the BashTags file's additive tag set already matches what the script would write, no prompt fires and the file is left untouched.
+
+## Tag canonicalization
+
+Tag names follow current Wrye Bash conventions. The script normalizes every deprecated alias below to its modern replacement(s) before writing the `{{BASH:...}}` block. This mirrors `Mopy/bash/bosh/__init__.py` `_tag_aliases` + `_removed_tags` in Wrye Bash; see `ExpandOneAliasTo` in the script for the authoritative table.
+
+| Deprecated tag (old) | Replacement tag(s) (new) |
+|----------------------|--------------------------|
+| `Actors.Perks.Add`     | `NPC.Perks.Add` |
+| `Actors.Perks.Change`  | `NPC.Perks.Change` |
+| `Actors.Perks.Remove`  | `NPC.Perks.Remove` |
+| `Body-F`               | `R.Body-F` |
+| `Body-M`               | `R.Body-M` |
+| `Body-Size-F`          | `R.Body-Size-F` |
+| `Body-Size-M`          | `R.Body-Size-M` |
+| `C.GridFlags`          | `C.ForceHideLand` |
+| `Derel`                | `Relations.Remove` |
+| `Eyes`                 | `R.Eyes` |
+| `Eyes-D`               | `R.Eyes` |
+| `Eyes-E`               | `R.Eyes` |
+| `Eyes-R`               | `R.Eyes` |
+| `Factions`             | `Actors.Factions` |
+| `Hair`                 | `R.Hair` |
+| `Invent`               | `Invent.Add`, `Invent.Remove` |
+| `InventOnly`           | `IIM`, `Invent.Add`, `Invent.Remove` |
+| `Merge`                | _(removed by Wrye Bash; dropped)_ |
+| `Npc.EyesOnly`         | `NPC.Eyes` |
+| `Npc.HairOnly`         | `NPC.Hair` |
+| `NpcFaces`             | `NPC.Eyes`, `NPC.Hair`, `NPC.FaceGen` |
+| `R.Relations`          | `R.Relations.Add`, `R.Relations.Change`, `R.Relations.Remove` |
+| `Relations`            | `Relations.Add`, `Relations.Change` |
+| `ScriptContents`       | _(removed by Wrye Bash; dropped)_ |
+| `Voice-F`              | `R.Voice-F` |
+| `Voice-M`              | `R.Voice-M` |
+
+## Heuristic Force* tags (opt-in)
+
+When the **Suggest heuristic Force* tags** checkbox is on, the script also emits these Wrye Bash variants under simple diff rules:
+
+| Tag | Detection rule | Known false-positive case |
+|-----|----------------|---------------------------|
+| `Actors.SpellsForceAdd` | `Actors.Spells` already suggested AND override's `Spells` (or FO4 `Actor Effects`) is a strict superset of master's (no removals, ≥ 1 add) | Mod author intentionally pruned default spells but re-added them in a different order — looks like a superset to the script. |
+| `Actors.AIPackagesForceAdd` | `Actors.AIPackages` already suggested AND override's `Packages` is a strict superset of master's | Same shape: list reorder + add reads as superset. |
+| `NpcFacesForceFullImport` | NPC differs from master in eyes (`ENAM`), hair (`HNAM`), AND face geometry (`FaceGen Data`) simultaneously | Pure cosmetic NPC overhauls that swap all three but don't actually need full face import. |
+
+Detections route through the same logging plumbing as the standard tags, so they appear in `Show Tag to Record Relationships` output with explicit "heuristic" reasons. Review heuristic suggestions before committing them to the header.
+
+## RACE Spells split (Oblivion + Skyrim/SSE/Enderal)
+
+For `RACE` records, the script splits a single `R.ChangeSpells` emission into two mutually exclusive tags based on a list-diff of the SPLO array (`Spells` on TES4, `Actor Effects` on TES5/SSE/Enderal):
+
+| Master vs Override | Tag emitted |
+|--------------------|-------------|
+| Override removes any SPEL the master had | `R.ChangeSpells` (full override required to drop SPELs) |
+| Override adds SPELs and removes none | `R.AddSpells` (additive merge sufficient; preserves other mods' adds) |
+| Identical sets | nothing |
+
+`R.AddSpells` is the correct mode for additive merging across mods.
+
+## v1.9.1.0 — bug fixes
+
+- `Actors.Spells` / `Actors.SpellsForceAdd`: handler walked `Spells` on Skyrim/SSE/FO3/FNV where the SPLO array is actually named `Actor Effects`. Path is now per-game (Oblivion = `Spells`, everything else = `Actor Effects`).
+- `Actors.Spells` had no call site for FO3/FNV — added (`CREA` + `NPC_`, gated by FNV/FO3 `Use Actor Effect List` template flag).
+- `Outfits.Add` / `Outfits.Remove`: handler walked the OTFT record signature instead of its `Items` (INAM) child array, so it never fired on any game. Fixed for Skyrim, SSE, FO4.
+- `NPC.Race` and `NPC.Class` were never emitted for Oblivion NPCs (only Eyes / FaceGen / Hair were). Added; no template-flag gating since Oblivion has no template system.
+- `R.AddSpells` / `R.ChangeSpells`: previously only emitted for Oblivion RACE records. Now also emitted for Skyrim/SSE/Enderal via the same `ProcessRaceSpells` Add/Change split, with the SPLO array path made game-aware.
+
+## Credits
+
+Original authors (please cite when referencing this script's lineage):
+
+- **fireundubh** — author of `WryeBashTagGenerator`, the upstream xEdit Pascal script this fork is derived from.
+- **Xideta** — author of the multifile variant of `WryeBashTagGenerator` that served as the immediate base for this fork.
+
+`-NG` fork:
+
+- **Beermotor** — maintainer of `WryeBashTagGenerator-NG`. Provided as-is with no support.
+
+> Beermotor, _WryeBashTagGenerator-NG_ (xEdit Pascal script), forked from fireundubh's _WryeBashTagGenerator_ (multifile variant by Xideta).
+
+## License
+
+Inherited from the upstream script. Treat as permissive unless/until clarified.
