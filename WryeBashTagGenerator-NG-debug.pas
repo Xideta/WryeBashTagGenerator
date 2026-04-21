@@ -21,7 +21,8 @@
   Output file: <xEdit folder>\Edit Scripts\WryeBashTagGenerator-NG-debug.log
   The full path is also written to xEdit Messages at the end of the run.
 
-  This file is a fork of WryeBashTagGenerator-NG.pas (base SHA: b15e95f).
+  This file is a fork of WryeBashTagGenerator-NG.pas (base SHA: 2bc4866,
+  plus the 1.9.2.0 multifile refactor applied to both files together).
   Sync detection-logic changes manually; do not change behavior in this
   file unless you also intend to debug an instrumentation bug.
 
@@ -38,7 +39,7 @@ Uses
 
 Const 
   ScriptName    = 'WryeBashTagGenerator-NG-debug';
-  ScriptVersion = '1.9.1.0-debug';
+  ScriptVersion = '1.9.2.0-debug';
   MinXEditVer   = $04010400; // 4.1.4 (native StringList set ops + assumed API surface)
   ScriptAuthor  = 'Beermotor';
   ScriptEmail   = 'NO SUPPORT';
@@ -75,11 +76,10 @@ Var
   g_ShowTagRelationships  : boolean;
   g_HeuristicForceTags    : boolean;
 
-  // Single-plugin enforcement: lock onto the first file we see
-  g_TargetFile     : IwbFile;
-  g_TargetFileName : string;
-  g_MultiFileError : boolean;
-  g_OtherFiles     : TStringList;
+  // User-requested run abort (set via the header/BashTags discrepancy dialog).
+  // Release-script path; debug fork does not mutate headers, but honours the
+  // flag so an abort raised in a release run can't be lost during a debug run.
+  g_AbortRun       : boolean;
 
   // ---- Debug-fork state ----------------------------------------------
   g_DebugLogPath          : string;             // resolved log file path
@@ -546,14 +546,7 @@ Begin
   // Wish I didn't have to make a new list for this, but script errors on AssignFile
   slOutToFileTags := TStringList.Create;
 
-  // Single-plugin lock
-  g_TargetFile     := Nil;
-  g_TargetFileName := '';
-  g_MultiFileError := False;
-  g_OtherFiles     := TStringList.Create;
-  g_OtherFiles.Sorted        := True;
-  g_OtherFiles.Duplicates    := dupIgnore;
-  g_OtherFiles.CaseSensitive := False;
+  g_AbortRun := False;
 
   If wbVersionNumber < MinXEditVer Then
     Begin
@@ -627,24 +620,22 @@ Begin
   If (ElementType(input) = etMainRecord) Then
     exit;
 
+  // Honour prior user-requested abort.
+  If g_AbortRun Then
+    Exit;
+
   f := GetFile(input);
-
-  // Single-plugin enforcement: lock onto the first file we see.
-  // Any additional distinct file flips an error flag; Finalize then aborts the run.
-  If Not Assigned(g_TargetFile) Then
-    Begin
-      g_TargetFile     := f;
-      g_TargetFileName := GetFileName(f);
-    End
-  Else If Not SameText(GetFileName(f), g_TargetFileName) Then
-    Begin
-      g_MultiFileError := True;
-      If g_OtherFiles.IndexOf(GetFileName(f)) = -1 Then
-        g_OtherFiles.Add(GetFileName(f));
-      Exit;
-    End;
-
   g_FileName := GetFileName(f);
+
+  // Start-of-Process state reset — per-plugin independence.
+  // Mirrors the release script; see its Process for the rationale.
+  slLog.Clear;
+  slTagRelationships.Clear;
+  slSuggestedTags.Clear;
+  slExistingTags.Clear;
+  slDifferentTags.Clear;
+  slBadTags.Clear;
+  slOutToFileTags.Clear;
 
   // Per-file banner in the debug trace.
   DbgLogUnfiltered(DBG_PER_TAG, '');
@@ -653,6 +644,7 @@ Begin
   DbgLogUnfiltered(DBG_PER_TAG, '================================================================================');
 
   AddMessage(#10);
+  LogInfo('=== ' + g_FileName + ' ===');
 
   LogInfo('Processing... ' + IntToStr(RecordCount(f)) + ' records. Please wait. This could take a while.');
 
@@ -1435,14 +1427,6 @@ Var
 Begin
   Result := 0;
 
-  If g_MultiFileError Then
-    Begin
-      LogError('This script must be run on a single plugin per invocation.');
-      LogError('Targeted: ' + g_TargetFileName + '; also seen: ' + g_OtherFiles.CommaText);
-      LogError('Re-run with only one plugin selected.');
-      Result := 99;
-    End;
-
   // Flush the debug trace BEFORE freeing other lists, so even if a Free
   // raises (or anything else goes wrong below) we still write the trace
   // and announce the path to the Messages tab.
@@ -1491,7 +1475,6 @@ Begin
   Try slBadTags.Free;          Except End;
   Try slDeprecatedTags.Free;   Except End;
   Try slOutToFileTags.Free;    Except End;
-  Try g_OtherFiles.Free;       Except End;
 End;
 
 

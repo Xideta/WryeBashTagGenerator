@@ -35,7 +35,7 @@ Uses
 
 Const 
   ScriptName    = 'WryeBashTagGenerator-NG';
-  ScriptVersion = '1.9.1.2';
+  ScriptVersion = '1.9.2.0';
   MinXEditVer   = $04010400; // 4.1.4 (native StringList set ops + assumed API surface)
   ScriptAuthor  = 'Beermotor';
   ScriptEmail   = 'NO SUPPORT';
@@ -59,11 +59,8 @@ Var
   g_BashTagsFilePath    : string;
   g_BashTagsFileExists  : boolean;
 
-  // Single-plugin enforcement: lock onto the first file we see
-  g_TargetFile     : IwbFile;
-  g_TargetFileName : string;
-  g_MultiFileError : boolean;
-  g_OtherFiles     : TStringList;
+  // User-requested run abort (set via the header/BashTags discrepancy dialog)
+  g_AbortRun       : boolean;
 
   g_FileName       : string;
   g_Tag            : string;
@@ -401,15 +398,26 @@ Begin
 End;
 
 
-Procedure NotifyHeaderBashTagsDiscrepancy;
+// Show the header/BashTags discrepancy warning with Skip/Abort buttons.
+// Returns True if the user chose Abort (halt the entire run);
+// returns False if the user chose Ignore (skip writes for this plugin, continue).
+// Writes are suppressed for the current plugin either way — the result only
+// decides whether subsequent plugins are processed.
+Function NotifyHeaderBashTagsDiscrepancy: boolean;
+
+Var
+  iResult : integer;
 Begin
-  MessageDlg(
-    'The {{BASH:...}} block in the plugin header and the existing BashTags file '
-    + 'disagree on tags.'#13#10
+  iResult := MessageDlg(
+    'The {{BASH:...}} block in the plugin header and the existing BashTags '
+    + 'file disagree on tags for plugin:'#13#10
+    + '    ' + g_FileName + #13#10#13#10
     + 'This script does not reconcile the two; please fix the discrepancy '
-    + 'manually before re-running.'#13#10#13#10
-    + 'Aborting writes for this plugin. The run will terminate normally.',
-    mtWarning, [mbAbort], 0);
+    + 'manually.'#13#10#13#10
+    + 'Ignore = skip writes for this plugin, continue with the next.'#13#10
+    + 'Abort  = halt the run; no further plugins will be processed.',
+    mtWarning, [mbIgnore, mbAbort], 0);
+  Result := (iResult = mrAbort);
 End;
 
 
@@ -492,14 +500,7 @@ Begin
   g_BashTagsFilePath   := '';
   g_BashTagsFileExists := False;
 
-  // Single-plugin lock
-  g_TargetFile     := Nil;
-  g_TargetFileName := '';
-  g_MultiFileError := False;
-  g_OtherFiles     := TStringList.Create;
-  g_OtherFiles.Sorted        := True;
-  g_OtherFiles.Duplicates    := dupIgnore;
-  g_OtherFiles.CaseSensitive := False;
+  g_AbortRun := False;
 
   If wbVersionNumber < MinXEditVer Then
     Begin
@@ -575,26 +576,33 @@ Begin
   If (ElementType(input) = etMainRecord) Then
     exit;
 
+  // Honour prior user-requested abort: once the discrepancy dialog sets
+  // g_AbortRun, every remaining per-file Process invocation returns immediately.
+  If g_AbortRun Then
+    Exit;
+
   f := GetFile(input);
-
-  // Single-plugin enforcement: lock onto the first file we see.
-  // Any additional distinct file flips an error flag; Finalize then aborts the run.
-  If Not Assigned(g_TargetFile) Then
-    Begin
-      g_TargetFile     := f;
-      g_TargetFileName := GetFileName(f);
-    End
-  Else If Not SameText(GetFileName(f), g_TargetFileName) Then
-    Begin
-      g_MultiFileError := True;
-      If g_OtherFiles.IndexOf(GetFileName(f)) = -1 Then
-        g_OtherFiles.Add(GetFileName(f));
-      Exit;
-    End;
-
   g_FileName := GetFileName(f);
 
+  // Start-of-Process state reset. Each selected plugin is tagged independently;
+  // pre-clearing here guarantees no leakage from a prior plugin even if that
+  // plugin's Process exited early (exception, discrepancy skip, etc.) before the
+  // end-of-Process clears ran.
+  slLog.Clear;
+  slTagRelationships.Clear;
+  slSuggestedTags.Clear;
+  slExistingTags.Clear;
+  slDifferentTags.Clear;
+  slBadTags.Clear;
+  slOutToFileTags.Clear;
+  slBashTagsFileAdds.Clear;
+  slBashTagsFileRemoves.Clear;
+  slBashTagsFileLines.Clear;
+  g_BashTagsFilePath   := '';
+  g_BashTagsFileExists := False;
+
   AddMessage(#10);
+  LogInfo('=== ' + g_FileName + ' ===');
 
   LogInfo('Processing... ' + IntToStr(RecordCount(f)) + ' records. Please wait. This could take a while.');
 
@@ -724,8 +732,13 @@ Begin
                       End
                     Else If HeaderBashTagsDiffer Then
                       Begin
-                        NotifyHeaderBashTagsDiscrepancy;
-                        LogWarn('Header/BashTags discrepancy detected; skipping all writes for this plugin. Reconcile manually and re-run.');
+                        If NotifyHeaderBashTagsDiscrepancy Then
+                          Begin
+                            g_AbortRun := True;
+                            LogWarn('Header/BashTags discrepancy detected; user aborted run. No further plugins will be processed.');
+                          End
+                        Else
+                          LogWarn('Header/BashTags discrepancy detected; skipping writes for this plugin. Continuing with remaining plugins.');
                         bDoFileWrite := False;
                         bWriteHeader := False;
                       End
@@ -1460,14 +1473,6 @@ Function Finalize: integer;
 Begin
   Result := 0;
 
-  If g_MultiFileError Then
-    Begin
-      LogError('This script must be run on a single plugin per invocation.');
-      LogError('Targeted: ' + g_TargetFileName + '; also seen: ' + g_OtherFiles.CommaText);
-      LogError('Re-run with only one plugin selected.');
-      Result := 99;
-    End;
-
   slLog.Free;
   slTagRelationships.Free;
   slSuggestedTags.Free;
@@ -1480,7 +1485,6 @@ Begin
   slBashTagsFileAdds.Free;
   slBashTagsFileRemoves.Free;
   slBashTagsFileLines.Free;
-  g_OtherFiles.Free;
 End;
 
 
